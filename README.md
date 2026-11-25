@@ -31,3 +31,41 @@ In Supabase Authentication URL Configuration, add the exact production site URL 
 - Use only the Supabase publishable/anon key in browser code.
 - Never commit service-role keys, database passwords, or private credentials.
 - Public registration must not grant the Admin role automatically.
+
+
+## Final system testing checklist
+
+Run these tests in a non-production/demo dataset before using the POS for real transactions.
+
+| Test | Expected result |
+|---|---|
+| Admin login | Admin can access all administration pages |
+| Manager login | Manager can access management pages but not user administration |
+| Cashier login | Cashier can access POS and permitted sales functions only |
+| Product creation | Product is saved and appears in the catalogue |
+| Stock adjustment | Inventory and stock movement update together |
+| POS checkout | Sale, sale items, payment and inventory deduction commit together |
+| Receipt | Invoice number, item lines, tax and total match the saved sale |
+| VAT | Inclusive and exclusive tax calculations match the configured rules |
+| Sales report | Date range returns the matching saved sales |
+| CSV export | CSV opens in spreadsheet software and values are correctly escaped |
+| Unauthorized access | Disallowed operations are rejected by RLS/database functions |
+
+### Test setup prerequisites
+
+1. Create an Auth user for each role using Supabase Authentication.
+2. Confirm each user has an active row in public.users.
+3. Assign roles in public.user_roles using the matching public.roles.id.
+4. Create at least one active branch, category and product.
+5. Add opening stock using the inventory adjustment function.
+6. Configure a test VAT rate; do not assume a sample rate is a Cambodian statutory rate.
+7. Run a small-value test checkout and verify sales, sale_items, payments, stock_movements and sale_tax_details.
+8. Remove or void test transactions according to the business's audit policy; do not directly delete financial records from production.
+
+### Security and deployment notes
+
+- Keep Row Level Security enabled.
+- Never place a Supabase service_role or secret key in frontend code.
+- The browser may use only the project's public publishable key.
+- GitHub Pages requires the repository owner/admin to enable Settings → Pages → Build and deployment → Source: GitHub Actions. The workflow cannot enable Pages with its current GitHub Actions token permissions.
+- GitHub Pages publishes this repository as a public static website. Do not store credentials, customer secrets, or private data in the repository.
