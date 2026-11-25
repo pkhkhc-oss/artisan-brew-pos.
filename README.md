@@ -3,7 +3,7 @@
 Modular browser-based coffee POS using HTML, CSS, JavaScript ES modules, Supabase Auth and PostgreSQL.
 
 ## Current status
-This repository contains the initial frontend/deployment scaffold. The complete POS modules and end-to-end browser validation are still in progress. Do not use this scaffold for live sales until the remaining modules are integrated and tested.
+This repository contains the modular frontend shell, Supabase browser client, authentication and role navigation, plus dashboard, product, inventory, POS checkout, VAT and sales-report screens. The application has not yet passed end-to-end browser testing. Do not use it for live sales until test accounts, demo records and all transaction workflows have been verified.
 
 ## Technology
 - HTML, CSS, JavaScript (ES modules)
@@ -12,8 +12,7 @@ This repository contains the initial frontend/deployment scaffold. The complete 
 
 ## Setup
 1. Create or open the Supabase project.
-2. In **Project Settings → API Keys**, copy the publishable key.
-3. Put it in `js/config/supabase.js` where indicated. Never put a service-role key in browser code.
+2. The project publishable key is configured in `js/config/supabase.js`. If you rotate it, replace it with the new publishable key. Never put a service-role key in browser code.
 4. Confirm the database schema and migrations are deployed.
 5. Serve this folder over HTTP (for example, VS Code Live Server). Do not open `index.html` directly with `file://`.
 6. Open the site and sign in with an account already provisioned in Supabase Auth and assigned an application role.
