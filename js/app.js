@@ -18,7 +18,7 @@ const pagePermissions = {
   dashboard: ["Admin", "Manager", "Cashier"],
   pos: ["Admin", "Manager", "Cashier"],
   products: ["Admin", "Manager"],
-  inventory: ["Admin", "Manager", "Cashier"],
+  inventory: ["Admin", "Manager"],
   reports: ["Admin", "Manager"],
   vat: ["Admin", "Manager"]
 };
