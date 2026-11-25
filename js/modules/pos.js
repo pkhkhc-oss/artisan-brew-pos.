@@ -153,7 +153,7 @@ export async function renderPOS(root) {
           "</p><p class='total'>TOTAL: $", Number(data.total).toFixed(2),
           "</p><p>Payment: ", escapeHtml(paymentMethod),
           "</p><hr><p class='muted'>Thank you for visiting Artisan Brew!</p>",
-          "<script>window.addEventListener('load',()=>window.print())<\\/script></body></html>"
+          "<script>window.addEventListener('load',()=>window.print())"<script>window.addEventListener('load',()=>window.print())<" + "/script></body></html>"</body></html>"
         ].join("");
 
         receiptWindow.document.open();
