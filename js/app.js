@@ -1,12 +1,18 @@
 import { signIn, signOut, getSessionUser, getUserAccess } from "./auth/auth.js";
+import { renderDashboard } from "./modules/dashboard.js";
+import { renderPOS } from "./modules/pos.js";
+import { renderCatalog } from "./modules/catalog.js";
+import { renderInventory } from "./modules/inventory.js";
+import { renderReports } from "./modules/reports.js";
+import { renderTax } from "./modules/tax.js";
 
-const authPanel = document.querySelector("#auth-panel");
-const workspace = document.querySelector("#workspace");
-const loginForm = document.querySelector("#login-form");
-const authMessage = document.querySelector("#auth-message");
-const userLabel = document.querySelector("#user-label");
-const pageTitle = document.querySelector("#page-title");
-const pageContent = document.querySelector("#page-content");
+const $ = selector => document.querySelector(selector);
+const authPanel = $("#auth-panel");
+const workspace = $("#workspace");
+const authMessage = $("#auth-message");
+const pageContent = $("#page-content");
+const userLabel = $("#user-label");
+const pageTitle = $("#page-title");
 
 const pagePermissions = {
   dashboard: ["Admin", "Manager", "Cashier"],
@@ -16,14 +22,29 @@ const pagePermissions = {
   reports: ["Admin", "Manager"],
   vat: ["Admin", "Manager"]
 };
+const pageTitles = {
+  dashboard: "Dashboard", pos: "POS Checkout", products: "Products & Categories",
+  inventory: "Branch Inventory", reports: "Sales Reports", vat: "VAT Settings"
+};
+const renderers = {
+  dashboard: renderDashboard, pos: renderPOS, products: renderCatalog,
+  inventory: renderInventory, reports: renderReports, vat: renderTax
+};
+let currentUser = null;
+let currentRoles = [];
+let pageLoadToken = 0;
 
 function showAuth(message = "") {
+  currentUser = null;
+  currentRoles = [];
   authPanel.hidden = false;
   workspace.hidden = true;
   authMessage.textContent = message;
 }
 
 function showWorkspace(user, roles) {
+  currentUser = user;
+  currentRoles = roles;
   authPanel.hidden = true;
   workspace.hidden = false;
   userLabel.textContent = user.email || "Signed in";
@@ -31,56 +52,73 @@ function showWorkspace(user, roles) {
     const page = button.dataset.page;
     button.hidden = !roles.some(role => pagePermissions[page]?.includes(role));
   });
-  openPage("dashboard");
+  return openPage("dashboard");
 }
 
-function openPage(page) {
-  const button = document.querySelector(`[data-page="${page}"]`);
-  if (!button || button.hidden) return;
-  document.querySelectorAll(".nav-link").forEach(item => item.classList.toggle("active", item === button));
-  const titles = {dashboard:"Dashboard",pos:"POS Checkout",products:"Products",inventory:"Inventory",reports:"Sales Reports",vat:"VAT Settings"};
-  pageTitle.textContent = titles[page] || "Dashboard";
-  pageContent.innerHTML = "";
-  const heading = document.createElement("h2");
-  heading.textContent = titles[page] || "Dashboard";
-  const paragraph = document.createElement("p");
-  paragraph.className = "muted";
-  paragraph.textContent = page === "dashboard"
-    ? "Welcome. Your account is authenticated. The feature modules are being integrated."
-    : "This screen is reserved for the next module integration. Do not process live transactions until checkout and permissions are fully tested.";
-  pageContent.append(heading, paragraph);
-}
-
-loginForm.addEventListener("submit", async event => {
-  event.preventDefault();
-  authMessage.textContent = "Signing in…";
-  const email = document.querySelector("#email").value.trim();
-  const password = document.querySelector("#password").value;
+async function openPage(page) {
+  if (!currentRoles.some(role => pagePermissions[page]?.includes(role))) return;
+  const token = ++pageLoadToken;
+  document.querySelectorAll(".nav-link").forEach(button => {
+    button.classList.toggle("active", button.dataset.page === page);
+  });
+  pageTitle.textContent = pageTitles[page] || "Dashboard";
+  pageContent.replaceChildren();
+  const loading = document.createElement("p");
+  loading.className = "muted";
+  loading.textContent = "Loading section…";
+  pageContent.append(loading);
   try {
-    const user = await signIn(email, password);
-    const access = await getUserAccess(user.id);
-    showWorkspace(user, access.roles);
+    await renderers[page](pageContent);
   } catch (error) {
-    authMessage.textContent = error.message || "Unable to sign in.";
+    if (token !== pageLoadToken) return;
+    pageContent.replaceChildren();
+    const heading = document.createElement("h2");
+    heading.textContent = "Unable to load this section";
+    const message = document.createElement("p");
+    message.className = "message";
+    message.textContent = error?.message || "An unexpected error occurred.";
+    pageContent.append(heading, message);
+  }
+}
+
+$("#login-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const submit = event.currentTarget.querySelector('button[type="submit"]');
+  submit.disabled = true;
+  authMessage.textContent = "Signing in…";
+  try {
+    const user = await signIn($("#email").value.trim(), $("#password").value);
+    const access = await getUserAccess(user.id);
+    await showWorkspace(user, access.roles);
+  } catch (error) {
+    showAuth(error?.message || "Unable to sign in.");
+  } finally {
+    submit.disabled = false;
   }
 });
 
-document.querySelector("#logout-button").addEventListener("click", async () => {
-  try { await signOut(); showAuth(); }
-  catch (error) { authMessage.textContent = error.message; }
+$("#logout-button").addEventListener("click", async () => {
+  try {
+    await signOut();
+    showAuth("You have signed out.");
+  } catch (error) {
+    authMessage.textContent = error?.message || "Unable to sign out.";
+  }
 });
 
-document.querySelector("#main-nav").addEventListener("click", event => {
+$("#main-nav").addEventListener("click", event => {
   const button = event.target.closest("[data-page]");
-  if (button) openPage(button.dataset.page);
+  if (button && !button.hidden) openPage(button.dataset.page);
 });
 
 try {
   const user = await getSessionUser();
   if (user) {
     const access = await getUserAccess(user.id);
-    showWorkspace(user, access.roles);
-  } else showAuth();
+    await showWorkspace(user, access.roles);
+  } else {
+    showAuth();
+  }
 } catch (error) {
-  showAuth(error.message || "Please sign in.");
+  showAuth(error?.message || "Please sign in.");
 }
