@@ -1,0 +1,37 @@
+name: Validate POS frontend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript module syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --input-type=module --check < "$file"
+          done < <(find js -type f -name '*.js' -print0)
+      - name: Verify frontend entry files
+        run: |
+          test -f index.html
+          test -f css/main.css
+          test -f css/modules.css
+          test -f js/app.js
+          test -f js/config/supabase.js
