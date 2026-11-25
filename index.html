@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17231e">
+  <title>Artisan Brew POS</title>
+  <link rel="stylesheet" href="./css/main.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section id="auth-panel" class="auth-card">
+      <div class="brand-mark">AB</div>
+      <p class="eyebrow">ARTISAN BREW</p>
+      <h1>Point of Sale</h1>
+      <p class="muted">Sign in to manage your coffee shop.</p>
+      <form id="login-form">
+        <label>Email<input id="email" type="email" autocomplete="username" required></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+        <button type="submit">Sign in</button>
+      </form>
+      <p id="auth-message" class="message" role="status"></p>
+    </section>
+
+    <section id="workspace" class="workspace" hidden>
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark small">AB</span><span>Artisan Brew</span></div>
+        <nav id="main-nav" aria-label="Main navigation">
+          <button data-page="dashboard" class="nav-link active">Dashboard</button>
+          <button data-page="pos" class="nav-link">POS Checkout</button>
+          <button data-page="products" class="nav-link">Products</button>
+          <button data-page="inventory" class="nav-link">Inventory</button>
+          <button data-page="reports" class="nav-link">Sales Reports</button>
+          <button data-page="vat" class="nav-link">VAT Settings</button>
+        </nav>
+        <div class="sidebar-bottom">
+          <span id="user-label" class="muted"></span>
+          <button id="logout-button" class="button-secondary">Sign out</button>
+        </div>
+      </aside>
+      <section class="main-content">
+        <header class="topbar"><div><p class="eyebrow">COFFEE OPERATIONS</p><h1 id="page-title">Dashboard</h1></div><span class="status-pill">Connected app shell</span></header>
+        <div id="page-content" class="content-card">
+          <h2>Welcome to Artisan Brew POS</h2>
+          <p class="muted">Authentication is connected. POS, catalog, inventory, tax and reporting screens will be integrated in the next implementation step.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
